@@ -56,10 +56,12 @@ set(syphon_SOURCES
 	)
 
 set(mac-syphon_HEADERS
+	cursor-capture.h
 	)
 
 set(mac-syphon_SOURCES
 	syphon.m
+	cursor-capture.m
 	plugin-main.c)
 
 set_source_files_properties(${mac-syphon_SOURCES} ${syphon_SOURCES}

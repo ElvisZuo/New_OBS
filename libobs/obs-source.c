@@ -2290,9 +2290,8 @@ const char *obs_source_get_id(const obs_source_t *source)
 }
 
 static inline void render_filter_bypass(obs_source_t *target,
-		gs_effect_t *effect, bool use_matrix)
+		gs_effect_t *effect, const char *tech_name)
 {
-	const char  *tech_name = use_matrix ? "DrawMatrix" : "Draw";
 	gs_technique_t *tech    = gs_effect_get_technique(effect, tech_name);
 	size_t      passes, i;
 
@@ -2306,9 +2305,8 @@ static inline void render_filter_bypass(obs_source_t *target,
 }
 
 static inline void render_filter_tex(gs_texture_t *tex, gs_effect_t *effect,
-		uint32_t width, uint32_t height, bool use_matrix)
+		uint32_t width, uint32_t height, const char *tech_name)
 {
-	const char  *tech_name = use_matrix ? "DrawMatrix" : "Draw";
 	gs_technique_t *tech    = gs_effect_get_technique(effect, tech_name);
 	gs_eparam_t    *image   = gs_effect_get_param_by_name(effect, "image");
 	size_t      passes, i;
@@ -2390,6 +2388,36 @@ void obs_source_process_filter_begin(obs_source_t *filter,
 	gs_blend_state_pop();
 }
 
+void obs_source_process_filter_tech_end(obs_source_t *filter, gs_effect_t *effect,
+		uint32_t width, uint32_t height, const char *tech_name,
+		const char *matrix_tech_name)
+{
+	obs_source_t *target, *parent;
+	gs_texture_t *texture;
+	uint32_t     target_flags, parent_flags;
+	bool         use_matrix;
+
+	if (!filter) return;
+
+	target       = obs_filter_get_target(filter);
+	parent       = obs_filter_get_parent(filter);
+	target_flags = target->info.output_flags;
+	parent_flags = parent->info.output_flags;
+	use_matrix   = !!(target_flags & OBS_SOURCE_COLOR_MATRIX);
+
+	const char *tech = use_matrix ?
+			matrix_tech_name ? matrix_tech_name : "DrawMatrix" :
+			tech_name ? tech_name : "Draw";
+
+	if (can_bypass(target, parent, parent_flags, filter->allow_direct)) {
+		render_filter_bypass(target, effect, tech);
+	} else {
+		texture = gs_texrender_get_texture(filter->filter_texrender);
+		render_filter_tex(texture, effect, width, height, tech);
+	}
+}
+
+
 void obs_source_process_filter_end(obs_source_t *filter, gs_effect_t *effect,
 		uint32_t width, uint32_t height)
 {
@@ -2406,11 +2434,13 @@ void obs_source_process_filter_end(obs_source_t *filter, gs_effect_t *effect,
 	parent_flags = parent->info.output_flags;
 	use_matrix   = !!(target_flags & OBS_SOURCE_COLOR_MATRIX);
 
+	const char *tech = use_matrix ? "DrawMatrix" : "Draw";
+
 	if (can_bypass(target, parent, parent_flags, filter->allow_direct)) {
-		render_filter_bypass(target, effect, use_matrix);
+		render_filter_bypass(target, effect, tech);
 	} else {
 		texture = gs_texrender_get_texture(filter->filter_texrender);
-		render_filter_tex(texture, effect, width, height, use_matrix);
+		render_filter_tex(texture, effect, width, height, tech);
 	}
 }
 

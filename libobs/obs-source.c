@@ -1517,6 +1517,11 @@ obs_source_t *obs_filter_get_target(const obs_source_t *filter)
 	return filter ? filter->filter_target : NULL;
 }
 
+gs_texture_t *obs_filter_get_texture(obs_source_t *filter)
+{
+	return gs_texrender_get_texture(filter->filter_texrender);
+}
+
 void obs_source_filter_add(obs_source_t *source, obs_source_t *filter)
 {
 	struct calldata cd = {0};

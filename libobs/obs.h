@@ -728,6 +728,11 @@ EXPORT obs_source_t *obs_filter_get_parent(const obs_source_t *filter);
  */
 EXPORT obs_source_t *obs_filter_get_target(const obs_source_t *filter);
 
+/**
+* Get the current texture of this filter's texture renderer.
+*/
+EXPORT gs_texture_t *obs_filter_get_texture(obs_source_t *filter);
+
 /** Adds a filter to the source (which is used whenever the source is used) */
 EXPORT void obs_source_filter_add(obs_source_t *source, obs_source_t *filter);
 

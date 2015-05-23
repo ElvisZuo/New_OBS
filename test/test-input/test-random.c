@@ -74,6 +74,15 @@ static void *video_thread(void *data)
 	return NULL;
 }
 
+static obs_properties_t *props_shit(void *bla)
+{
+	obs_properties_t *props = obs_properties_create();
+
+	obs_properties_add_editable_list(props, "test1", "test1", true,
+			"Shit (*.*)", NULL);
+	return props;
+}
+
 static void *random_create(obs_data_t *settings, obs_source_t *source)
 {
 	struct random_tex *rt = bzalloc(sizeof(struct random_tex));
@@ -103,4 +112,5 @@ struct obs_source_info test_random = {
 	.get_name     = random_getname,
 	.create       = random_create,
 	.destroy      = random_destroy,
+	.get_properties = props_shit,
 };

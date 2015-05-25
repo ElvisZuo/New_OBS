@@ -187,6 +187,13 @@ static CodecDesc GetDefaultCodecDesc(const ff_format_desc *formatDesc,
 			id);
 }
 
+#ifdef _WIN32
+void OBSBasicSettings::ToggleDisableAero(bool checked)
+{
+	SetAeroEnabled(!checked);
+}
+#endif
+
 void OBSBasicSettings::HookWidget(QWidget *widget, const char *signal,
 		const char *slot)
 {
@@ -307,6 +314,22 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 	HookWidget(ui->colorFormat,          COMBO_CHANGED,  ADV_CHANGED);
 	HookWidget(ui->colorSpace,           COMBO_CHANGED,  ADV_CHANGED);
 	HookWidget(ui->colorRange,           COMBO_CHANGED,  ADV_CHANGED);
+
+#ifdef _WIN32
+	uint32_t winVer = GetWindowsVersion();
+	if (winVer > 0 && winVer < 0x602) {
+		toggleAero = new QCheckBox(
+				QTStr("Basic.Settings.Video.DisableAero"),
+				this);
+		QFormLayout *videoLayout =
+			reinterpret_cast<QFormLayout*>(ui->videoPage->layout());
+		videoLayout->addRow(nullptr, toggleAero);
+
+		HookWidget(toggleAero, CHECK_CHANGED, VIDEO_CHANGED);
+		connect(toggleAero, &QAbstractButton::toggled,
+				this, &OBSBasicSettings::ToggleDisableAero);
+	}
+#endif
 
 	//Apply button disabled until change.
 	EnableApplyButton(false);
@@ -870,6 +893,14 @@ void OBSBasicSettings::LoadVideoSettings()
 	LoadResolutionLists();
 	LoadFPSData();
 	LoadDownscaleFilters();
+
+#ifdef _WIN32
+	if (toggleAero) {
+		bool disableAero = config_get_bool(main->Config(), "Video",
+				"DisableAero");
+		toggleAero->setChecked(disableAero);
+	}
+#endif
 
 	loading = false;
 }
@@ -1827,6 +1858,12 @@ void OBSBasicSettings::SaveVideoSettings()
 	SaveSpinBox(ui->fpsNumerator, "Video", "FPSNum");
 	SaveSpinBox(ui->fpsDenominator, "Video", "FPSDen");
 	SaveComboData(ui->downscaleFilter, "Video", "ScaleType");
+
+#ifdef _WIN32
+	if (toggleAero) {
+		SaveCheckBox(toggleAero, "Video", "DisableAero");
+	}
+#endif
 }
 
 void OBSBasicSettings::SaveAdvancedSettings()

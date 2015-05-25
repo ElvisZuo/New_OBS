@@ -30,6 +30,7 @@
 class OBSBasic;
 class QAbstractButton;
 class QComboBox;
+class QCheckBox;
 class OBSPropertiesView;
 class OBSHotkeyWidget;
 
@@ -151,6 +152,11 @@ private:
 		advancedChanged= false;
 		EnableApplyButton(false);
 	}
+
+#ifdef _WIN32
+	QCheckBox *toggleAero = nullptr;
+	void ToggleDisableAero(bool checked);
+#endif
 
 	void HookWidget(QWidget *widget, const char *signal, const char *slot);
 

@@ -256,6 +256,7 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 	HookWidget(ui->advOutApplyService,   CHECK_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->advOutRecType,        COMBO_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->advOutRecPath,        EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecFormat,      COMBO_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->advOutRecEncoder,     COMBO_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->advOutRecUseRescale,  CHECK_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->advOutRecRescale,     CBEDIT_CHANGED, OUTPUTS_CHANGED);
@@ -998,6 +999,8 @@ void OBSBasicSettings::LoadAdvOutputRecordingSettings()
 {
 	const char *type = config_get_string(main->Config(), "AdvOut",
 			"RecType");
+	const char *format = config_get_string(main->Config(), "AdvOut",
+			"RecFormat");
 	const char *path = config_get_string(main->Config(), "AdvOut",
 			"RecFilePath");
 	bool rescale = config_get_bool(main->Config(), "AdvOut",
@@ -1012,6 +1015,9 @@ void OBSBasicSettings::LoadAdvOutputRecordingSettings()
 	ui->advOutRecPath->setText(path);
 	ui->advOutRecUseRescale->setChecked(rescale);
 	ui->advOutRecRescale->setCurrentText(rescaleRes);
+
+	int idx = ui->advOutRecFormat->findText(format);
+	ui->advOutRecFormat->setCurrentIndex(idx);
 
 	switch (trackIndex) {
 	case 1: ui->advOutRecTrack1->setChecked(true); break;
@@ -1953,6 +1959,7 @@ void OBSBasicSettings::SaveOutputSettings()
 			RecTypeFromIdx(ui->advOutRecType->currentIndex()));
 
 	SaveEdit(ui->advOutRecPath, "AdvOut", "RecFilePath");
+	SaveCombo(ui->advOutRecFormat, "AdvOut", "RecFormat");
 	SaveComboData(ui->advOutRecEncoder, "AdvOut", "RecEncoder");
 	SaveCheckBox(ui->advOutRecUseRescale, "AdvOut", "RecRescale");
 	SaveCombo(ui->advOutRecRescale, "AdvOut", "RecRescaleRes");
